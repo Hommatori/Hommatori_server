@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/e1066050-ca3c-4b95-add7-22f894721899/resourceGroups/Hommatori/providers/Microsoft.Web/sites/hommatoriapi",
+    "appService.deploySubpath": "."
+}
