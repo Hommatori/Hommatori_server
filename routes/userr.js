@@ -1,4 +1,5 @@
 const express = require('express');
+const { response } = require('../app');
 const router = express.Router();
 const userr = require('../models/userr_model');
 
@@ -16,18 +17,13 @@ router.get('/:id',
   }
 });
 
-router.get('/', function (req, res) {
-
+router.get('',function (response) {
   userr.getUserAll(function(err, dbResult) {
     if (err) {
-      console.log(err);
+      response.json(err);
     } else {
       let data = dbResult;
-      try{
-        res.json(data.rows)
-      } catch(err){
-        res.send("nothing found")
-      }
+      response.json(data.rows);
     }
   });   
 });

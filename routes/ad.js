@@ -1,4 +1,5 @@
 const express = require('express');
+const { response } = require('../app');
 const router = express.Router();
 const ad = require('../models/ad_model');
 
@@ -16,7 +17,7 @@ router.get('/:id',
   }
 });
 
-router.get('/', function (req, res) {
+router.get('/', function (response) {
 
   ad.getAdAll(function(err, dbResult) {
     if (err) {
@@ -24,13 +25,12 @@ router.get('/', function (req, res) {
     } else {
       let data = dbResult;
       try{
-        res.json(data.rows)
+        response.json(data.rows)
       } catch(err){
-        res.send("nothing found")
+        response.send("nothing found")
       }
     }
   });   
 });
-
 
 module.exports = router;
