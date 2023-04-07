@@ -1,8 +1,7 @@
 var express = require('express');
-var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var port = process.env.PORT || 3000;
+var port = process.env.PORT || 8080;
 
 var userrRouter = require('./routes/userr');
 var adRouter = require('./routes/ad');
@@ -13,7 +12,6 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/userr', userrRouter);
 app.use('/ad', adRouter);

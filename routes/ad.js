@@ -1,5 +1,4 @@
 const express = require('express');
-const { response } = require('../app');
 const router = express.Router();
 const ad = require('../models/ad_model');
 
@@ -17,7 +16,7 @@ router.get('/:id',
   }
 });
 
-router.get('/', function (response) {
+router.get('/', function (request, response) {
 
   ad.getAdAll(function(err, dbResult) {
     if (err) {
@@ -31,6 +30,20 @@ router.get('/', function (response) {
       }
     }
   });   
+});
+
+router.get('/withparams/get',
+ function(request, response) {
+  if (request.query) {
+    ad.getByParams(request.query, function(err, dbResult) {
+      if (err) {
+        response.json(err);
+      } else {
+        let data = dbResult;
+        response.json(data.rows);
+      }
+    });
+  }
 });
 
 module.exports = router;
