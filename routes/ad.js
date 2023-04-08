@@ -40,7 +40,11 @@ router.get('/withparams/get',
         response.json(err);
       } else {
         let data = dbResult;
-        response.json(data.rows);
+        if(data.rows.length >  0){
+          response.json(data.rows[0]);
+        } else {
+          response.json(data.rows);
+        }
       }
     });
   }
