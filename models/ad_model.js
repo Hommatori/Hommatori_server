@@ -40,16 +40,16 @@ const ad = {
 
       // check final query params
       if (params.order == '1') {  // sort by oldest date first
-        queryString += ` order by date desc limit 4`;
+        queryString += ` order by date desc limit 10`;
       } else if (params.order == '2') { // sort by lowest first    
-        queryString += ` order by price asc limit 4`;
+        queryString += ` order by price asc limit 10`;
       }else if (params.order == '3') { // sort by higest price first  
-        queryString += ` order by price desc limit 4`;
+        queryString += ` order by price desc limit 10`;
       } else { // sort by newest date first (default)
-        queryString += ` order by date asc limit 4`;
+        queryString += ` order by date asc limit 10`;
       }
       if (params.offset != 'undefined') { // since we return only a specified amount of results, you can request overflow pages by number
-        const defaultNumOfResults = 4;
+        const defaultNumOfResults = 10;
         let pageNumber = params.offset * defaultNumOfResults;
         queryString += ` offset ${pageNumber}`;
       }
