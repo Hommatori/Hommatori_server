@@ -47,6 +47,7 @@ const ad = {
       } else { // sort by newest date first (default)
         queryString += ` order by date asc limit 10`;
       }
+
       if (params.page != 'undefined') { // since we return only a specified amount of results, you can request overflow pages by number
         const defaultNumOfResults = 10; //return 10 results per page
         let offset = params.page - 1 // set offset for page sql query (page requests start from 1 but sql request for page 1 has offset 0)
