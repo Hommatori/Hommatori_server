@@ -11,7 +11,6 @@ const ad = {
     },
 
     getByParams: function(params, callback) {
-
       // we want the query to return both total result row count as a specified amount of results at a time
       // we achieve this by using Common Table Expression (CTE) or a subquery
       let queryString = 'with rowcount as (select count(adid) as total_rows from ad'; // start with defining total_rows (total row count) 
