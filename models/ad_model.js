@@ -47,9 +47,11 @@ const ad = {
       } else { // sort by newest date first (default)
         queryString += ` order by date asc limit 10`;
       }
-      if (params.offset != 'undefined') { // since we return only a specified amount of results, you can request overflow pages by number
-        const defaultNumOfResults = 10;
-        let pageNumber = params.offset * defaultNumOfResults;
+
+      if (params.page != 'undefined') { // since we return only a specified amount of results, you can request overflow pages by number
+        const defaultNumOfResults = 10; //return 10 results per page
+        let offset = params.page - 1 // set offset for page sql query (page requests start from 1 but sql request for page 1 has offset 0)
+        let pageNumber = offset * defaultNumOfResults;
         queryString += ` offset ${pageNumber}`;
       }
       // and finally we make the query to return an object where total rowcount is a key-value pair ("total_rows": "*value here*")
