@@ -39,17 +39,18 @@ const ad = {
 
       // check final query params
       if (params.order == '1') {  // sort by oldest date first
-        queryString += ` order by date desc limit 4`;
+        queryString += ` order by date desc limit 10`;
       } else if (params.order == '2') { // sort by lowest first    
-        queryString += ` order by price asc limit 4`;
+        queryString += ` order by price asc limit 10`;
       }else if (params.order == '3') { // sort by higest price first  
-        queryString += ` order by price desc limit 4`;
+        queryString += ` order by price desc limit 10`;
       } else { // sort by newest date first (default)
-        queryString += ` order by date asc limit 4`;
+        queryString += ` order by date asc limit 10`;
       }
-      if (params.offset != 'undefined') { // since we return only a specified amount of results, you can request overflow pages by number
-        const defaultNumOfResults = 4;
-        let pageNumber = params.offset * defaultNumOfResults;
+      if (params.page != 'undefined') { // since we return only a specified amount of results, you can request overflow pages by number
+        const defaultNumOfResults = 10; //return 10 results per page
+        let offset = params.page - 1 // set offset for page sql query (page requests start from 1 but sql request for page 1 has offset 0)
+        let pageNumber = offset * defaultNumOfResults;
         queryString += ` offset ${pageNumber}`;
       }
       // and finally we make the query to return an object where total rowcount is a key-value pair ("total_rows": "*value here*")
