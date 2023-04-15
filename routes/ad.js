@@ -11,7 +11,7 @@ router.get('/:id',
         response.status(500).json('internal server error');
       } else {
         let data = dbResult;
-        response.status(200).json(data.rows);
+        response.status(200).json(data.rows[0]);
       }
     });
   }
