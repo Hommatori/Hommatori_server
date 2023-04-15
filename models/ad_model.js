@@ -1,13 +1,14 @@
+const { query } = require('express');
 const db = require('../database');
 
 const ad = {
 
   getAdbyid: function(id, callback) {
-      return db.query('select * from ad where adid= $1',[id], callback);
+    return db.query('select * from ad where adid = $1',[id], callback);
   },
 
   getAdAll: function(callback) {
-      return db.query('select * from ad', callback);
+    return db.query('select * from ad', callback);
   },
 
   getByParams: function(params, callback) {
@@ -58,9 +59,7 @@ const ad = {
     // and actual data is a table of objects (with the key "data")
     queryString += ') select rowcount.total_rows, json_agg(result.*) as data from rowcount, result group by rowcount.total_rows'
   
-
-    console.log(queryString)
-    // execute query and return results
+    // execute query and return results    
     return db.query(queryString, callback);
   },    
 }
