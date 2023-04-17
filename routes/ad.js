@@ -6,12 +6,16 @@ router.get('/:id',
  function(request, response) {
   if (request.params.id) {
     ad.getAdbyid(request.params.id, function(err, dbResult) {
-      if (err) {;
+      if (err) {
         console.log(err)
         response.status(500).json('internal server error');
       } else {
         let data = dbResult;
-        response.status(200).json(data.rows[0]);
+        if(data.rows.length == 0) {
+          response.status(404).json("not found");
+        } else {
+          response.status(200).json(data.rows[0]);
+        }
       }
     });
   }
