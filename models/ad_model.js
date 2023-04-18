@@ -49,9 +49,14 @@ const ad = {
       queryString += ` order by date asc limit 10`;
     }
 
-    if (params.page != 'undefined') { // since we return only a specified amount of results, you can request overflow pages by number
+    if (params.page) { // since we return only a specified amount of results, you can request overflow pages by number
       const defaultNumOfResults = 10; //return 10 results per page
       let offset = params.page - 1 // set offset for page sql query (page requests start from 1 but sql request for page 1 has offset 0)
+      let pageNumber = offset * defaultNumOfResults;
+      queryString += ` offset ${pageNumber}`;
+    } else {
+      const defaultNumOfResults = 10; //return 10 results per page
+      let offset = 0 // set default offset for page sql query (page requests start from 1 but sql request for page 1 has offset 0)
       let pageNumber = offset * defaultNumOfResults;
       queryString += ` offset ${pageNumber}`;
     }
