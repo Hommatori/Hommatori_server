@@ -7,10 +7,15 @@ router.get('/:id',
   if (request.params.id) {
     ad.getAdbyid(request.params.id, function(err, dbResult) {
       if (err) {
-        response.json(err);
+        console.log(err)
+        response.status(500).json('internal server error');
       } else {
         let data = dbResult;
-        response.json(data.rows);
+        if(data.rows.length == 0) {
+          response.status(404).json("not found");
+        } else {
+          response.status(200).json(data.rows[0]);
+        }
       }
     });
   }
@@ -21,12 +26,13 @@ router.get('/', function (request, response) {
   ad.getAdAll(function(err, dbResult) {
     if (err) {
       console.log(err);
+      response.status(500).json('internal server error');
     } else {
       let data = dbResult;
       try{
-        response.json(data.rows)
+        response.status(200).json(data.rows)
       } catch(err){
-        response.send("nothing found")
+        response.status(404).json("nothing found")
       }
     }
   });   
@@ -37,13 +43,14 @@ router.get('/withparams/get',
   if (request.query) {
     ad.getByParams(request.query, function(err, dbResult) {
       if (err) {
-        response.json(err);
+        console.log(err);
+        response.status(500).json('internal server error');
       } else {
         let data = dbResult;
         if(data.rows.length >  0){
-          response.json(data.rows[0]);
+          response.status(200).json(data.rows[0]);
         } else {
-          response.json(data.rows);
+          response.status(404).json(data.rows);
         }
       }
     });
