@@ -18,13 +18,13 @@ const ad = {
     let queryArray = [];
 
     // check if first parameters are given and add to query array accordingly
-    if (params.type && params.type !== 'all') {
+    if (params.type && params.type !== 'all' && params.type.trim() !== 'null') {
       queryArray.push(`type = '${params.type}'`);
     }
-    if (params.region && params.region !== 'all') {
+    if (params.region && params.region !== 'all' && params.region.trim() !== 'null') {
       queryArray.push(`region = '${params.region}'`);
     }
-    if (params.query) {
+    if (params.query && params.query.trim() !== 'null') {
       let queryWords = params.query.split(' ').map(word => `'%${word}%'`);
       queryArray.push(`(header ilike all (array[${queryWords}]) or description ilike all (array[${queryWords}]))`);
     }          
@@ -49,7 +49,7 @@ const ad = {
       queryString += ` order by date asc limit 10`;
     }
 
-    if (params.page) { // since we return only a specified amount of results, you can request overflow pages by number
+    if (params.page && params.page.trim() !== 'null') { // since we return only a specified amount of results, you can request overflow pages by number
       const defaultNumOfResults = 10; //return 10 results per page
       let offset = params.page - 1 // set offset for page sql query (page requests start from 1 but sql request for page 1 has offset 0)
       let pageNumber = offset * defaultNumOfResults;

@@ -1,34 +1,37 @@
 const express = require('express');
 const router = express.Router();
 const userr = require('../models/userr_model');
+const AuthMiddleware = require('../authMiddleware.js');
 const { v4: uuidv4 } = require('uuid');
 
 router.get('/:id', function(request, response) {
   if (request.params.id) {
-    userr.getUserbyid(request.params.id, function(err, dbResult) {
+    userr.getProfileData(request.params.id, function(err, dbResult) {
       if (err) {
-        response.json(err);
+        response.status(500).json('internal server error');
       } else {
         let data = dbResult;
-        response.json(data.rows);
+        response.status(200).json(data.rows[0]);
       }
     });
   }
 });
 
-router.get('/', function (req, res) {
-  userr.getUserAll(function(err, dbResult) {
-    if (err) {
-      console.log(err);
-    } else {
-      let data = dbResult;
-      try{
-        res.json(data.rows)
-      } catch(err){
-        res.send("nothing found")
+router.get('/protected/:id', AuthMiddleware, function(request, response) {
+  try {
+    // retrieve the user's profile information from the database
+    userr.getProfileData(request.params.id, function(err, dbResult) {
+      if (err) {
+        response.status(500).json('internal server error');
+      } else {
+        let data = dbResult;
+        response.status(200).json(data.rows[0]);
       }
-    }
-  });   
+    });
+  } catch (err) {
+    console.error(err);
+    response.status(500).json({ message: 'Server error' });
+  }
 });
 
 
@@ -56,28 +59,7 @@ router.delete('/:id',
 function(request, response) {
   userr.delete(request.params.id, function(err, count) {
 
-router.get('/ad/:id', function(request, response) {
-    if (request.params.id) {
-      userr.getAdPublisher(request.params.id, function(err, dbResult) {
-        if (err) {
-          response.json(err);
-        } else {
-          let data = dbResult;
-          response.json(data.rows[0]);
-        }
-      });
-    }
-  });
-
-router.post('/', function(request, response) {
-  userr.add(request.body, function(err, count) {
-
-    if (err) {
-      response.json(err);
-    } else {
-      response.json(count);
-    }
-  });
+  })
 });
 
 router.put('/:id',
