@@ -58,8 +58,7 @@ module.exports = function(passport) {
                     email: accData.rows[0].email,
                     fname: accData.rows[0].fname,
                     lname: accData.rows[0].lname
-                }               
-
+                }
                 return done(null, user);
             } catch(e){
                 return done(e);

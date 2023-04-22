@@ -8,7 +8,7 @@ require('./config/passport')(passport);
 
 const app = express();
 const PORT = process.env.PORT || 8080;
-const SECRET_KEY = process.env.JWT_SECRET_KEY;
+const SECRET_KEY = process.env.SESSION_SECRET_KEY;
 
 const userrRouter = require('./routes/userr');
 const adRouter = require('./routes/ad');
@@ -16,7 +16,6 @@ const signupRouter = require('./routes/signup.js');
 
 // Configure express-session middleware
 app.use(session({
-  user: null,
   secret: SECRET_KEY,
   resave: false,
   saveUninitialized: false,
@@ -58,10 +57,7 @@ app.post('/login',
   passport.authenticate('local'), (req, res) => {
   // user authentication already done through passport here
   // Set the user object in session data
-  req.session.user = { id: req.user.id, fname: req.user.fname };
-  console.log('Session set:', req.session); // Add this line
-  console.log("yes")
-  return res.status(200).json({user: req.user });
+  return res.status(200).json({sessionCookie: req.session.cookie, user: req.user});
 })
 
 app.post('/logout', (req, res) => {
