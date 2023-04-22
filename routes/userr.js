@@ -1,53 +1,49 @@
 const express = require('express');
 const router = express.Router();
 const userr = require('../models/userr_model');
+const AuthMiddleware = require('../authMiddleware.js');
 
 router.get('/:id', function(request, response) {
   if (request.params.id) {
-    userr.getUserbyid(request.params.id, function(err, dbResult) {
+    userr.getProfileData(request.params.id, function(err, dbResult) {
       if (err) {
-        response.json(err);
+        response.status(500).json('internal server error');
       } else {
         let data = dbResult;
-        response.json(data.rows);
+        response.status(200).json(data.rows[0]);
       }
     });
   }
 });
 
-router.get('',function (response) {
-  userr.getUserAll(function(err, dbResult) {
-    if (err) {
-      response.json(err);
-    } else {
-      let data = dbResult;
-      response.json(data.rows);
-    }
-  });   
+router.get('/protected/:id', AuthMiddleware, function(request, response) {
+  try {
+    // retrieve the user's profile information from the database
+    userr.getProfileData(request.params.id, function(err, dbResult) {
+      if (err) {
+        response.status(500).json('internal server error');
+      } else {
+        let data = dbResult;
+        response.status(200).json(data.rows[0]);
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    response.status(500).json({ message: 'Server error' });
+  }
 });
 
 router.get('/ad/:id', function(request, response) {
     if (request.params.id) {
       userr.getAdPublisher(request.params.id, function(err, dbResult) {
         if (err) {
-          response.json(err);
+          response.status(500).json('internal server error');
         } else {
           let data = dbResult;
-          response.json(data.rows[0]);
+          response.status(200).json(data.rows[0]);
         }
       });
     }
-  });
-
-router.post('/', function(request, response) {
-  userr.add(request.body, function(err, count) {
-    if (err) {
-      response.json(err);
-    } else {
-      response.json(request.body); 
-    }
-  });
 });
-
 
 module.exports = router;
