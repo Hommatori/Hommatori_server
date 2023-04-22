@@ -114,18 +114,17 @@ router.post("/", AuthMiddleware, (req, res) => {
         }
       });
     } else { // create new ad
-      ad.add(newMeal, function(err) {
+      ad.add(newAd, function(err) {
           if (err) {
               console.log(err);
               res.status(500).send('internal server error');
           } else {
-              res.status(201).json('ad created');
-              console.log("ad created with adid: " + newAd.adid);
+              res.status(200).json('ad created');
           }
       });
     }
   } catch (e){
-    res.status(201).json({status: "meal created", idfood: newMeal.idfood});
+    res.status(500).json('could not create ad');
   }
 });
 
