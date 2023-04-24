@@ -159,6 +159,19 @@ router.post("/imageupload", upload.single("image"), async (req, res) => {
       res.status(500).json({ message: "Error uploading file" });
     }
   }  
+
 });
+
+router.delete('/:id', (req, response) => {
+  console.log('delete'  )
+  ad.delete(req.params.id, function(err) {
+    if (err) {
+      console.log(err)
+      response.status(500).json('internal server error');
+    } else {
+        response.status(200);
+    }
+  })
+})
 
 module.exports = router;
