@@ -16,6 +16,19 @@ router.get('/:id', function(request, response) {
   }
 });
 
+router.get('/ad/:id', function(request, response) { // get ad publisher's data by ad's ID to show publisher data in nextjs single ad page
+  if (request.params.id) {
+    userr.getAdPublisher(request.params.id, function(err, dbResult) {
+      if (err) {
+        response.status(500).json('internal server error');
+      } else {
+        let data = dbResult;
+        response.status(200).json(data.rows[0]);
+      }
+    });
+  }
+});
+
 router.get('/getprivatedata/:id', AuthMiddleware, function(request, response) {
   try {
     // retrieve the user's profile information from the database
