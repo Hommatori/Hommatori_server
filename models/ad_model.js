@@ -66,6 +66,19 @@ const ad = {
     // execute query and return results    
     return db.query(queryString, callback);
   },    
+    add: function(newAd, callback) { 
+      return db.query('insert into ad (adid, type, header, description, location, price, userid, region, municipality) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+      [newAd.adid, newAd.type, newAd.header, newAd.description, newAd.location, newAd.price, newAd.userid, newAd.region, newAd.municipality], callback);
+    },
+
+    update: function(newAd, callback) { 
+      return db.query('insert into ad(adid, type, header, description, location, price, userid, region, municipality) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
+      [newAd.adid, newAd.type, newAd.header, newAd.description, newAd.location, newAd.price, newAd.userid, newAd.region, newAd.municipality], callback);
+  },
+
+    delete: function(id, callback) {
+      return db.query('delete from ad where adid = $1', [id], callback);
+  },
 }
 
 module.exports = ad;
