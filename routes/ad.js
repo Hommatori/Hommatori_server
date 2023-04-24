@@ -81,7 +81,7 @@ router.get('/withparams/get',
 });
 
 
-router.post("/", AuthMiddleware, (req, res) => {
+router.post("/", /* AuthMiddleware,*/ (req, res) => {
   const requiredFields = ['type', 'header', 'description', 'location', 'price', 'userid', 'region', 'municipality'];
   for (const field of requiredFields) {
     if (!(field in req.body) || typeof req.body[field] !== 'string') {
