@@ -81,7 +81,7 @@ router.get('/withparams/get',
 });
 
 
-router.post("/", AuthMiddleware, (req, res) => {
+router.post("/",  AuthMiddleware ,  (req, res) => {
   const requiredFields = ['type', 'header', 'description', 'location', 'price', 'userid', 'region', 'municipality'];
   for (const field of requiredFields) {
     if (!(field in req.body) || typeof req.body[field] !== 'string') {
@@ -91,7 +91,7 @@ router.post("/", AuthMiddleware, (req, res) => {
   }
 
   const newAd = {
-    adid: req.body.adid,
+    adid: uuidv4(),
     type: req.body.type,
     header: req.body.header,
     description: req.body.description,
@@ -103,17 +103,8 @@ router.post("/", AuthMiddleware, (req, res) => {
   }
 
   try {
-    if(newAd.adid){ // update if id exists
-      ad.update(newAd, function(err) {
-        if (err) {
-            console.log(err);
-            res.status(500).json('internal server error');
-        } else {
-            res.status(201).json('ad updated');
-            console.log("ad updated with id: " + newAd.adid);
-        }
-      });
-    } else { // create new ad
+      console.log(newAd)
+      console.log(newAd.adid)
       ad.add(newAd, function(err) {
           if (err) {
               console.log(err);
@@ -123,7 +114,7 @@ router.post("/", AuthMiddleware, (req, res) => {
           }
       });
     }
-  } catch (e){
+   catch (e){
     res.status(500).json('could not create ad');
   }
 });
