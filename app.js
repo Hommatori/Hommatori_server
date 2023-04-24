@@ -55,10 +55,16 @@ app.post('/login',
     next();
   },
   passport.authenticate('local'), (req, res) => {
-  // user authentication already done through passport here
-  // Set the user object in session data
-  return res.status(200).json({sessionCookie: req.session.cookie, user: req.user});
-})
+    // user authentication already done through passport here
+    // Set the user object in session data
+    req.session.user = req.user;
+
+    // Set the session cookie
+    res.cookie('session', req.sessionID, {maxAge: req.session.cookie.maxAge, httpOnly: true});
+    res.cookie('user', JSON.stringify(req.user), {maxAge: req.session.cookie.maxAge, httpOnly: true});
+
+    return res.status(200).json({ message: 'Cookies set!' });
+});
 
 app.post('/logout', (req, res) => {
   req.session.destroy();
