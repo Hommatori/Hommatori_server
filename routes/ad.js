@@ -103,8 +103,8 @@ router.post("/",  AuthMiddleware ,  (req, res) => {
   }
 
   try {
-      console.log(newAd)
-      console.log(newAd.adid)
+    //  console.log(newAd)
+    //  console.log(newAd.adid)
       ad.add(newAd, function(err) {
           if (err) {
               console.log(err);
@@ -162,14 +162,13 @@ router.post("/imageupload", upload.single("image"), async (req, res) => {
 
 });
 
-router.delete('/:id', (req, response) => {
-  console.log('delete'  )
+router.delete('/:id', AuthMiddleware, (req, response) => {
   ad.delete(req.params.id, function(err) {
     if (err) {
       console.log(err)
       response.status(500).json('internal server error');
     } else {
-        response.status(200);
+        response.status(200).json('deleted successfully');
     }
   })
 })
