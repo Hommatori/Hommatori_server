@@ -52,8 +52,10 @@ app.post('/login',
       return res.status(401).send();
     }
 
-    const encryptedUser = encryptData(user);
-    const accessToken = jwt.sign({ encryptedData: encryptedUser }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' });
+    const isMobileApp = req.body.mobileAppToken && req.body.mobileAppToken === process.env.MOBILE_TOKEN;
+    const payload = isMobileApp ? { user } : { encryptedData: encryptData(user) };
+
+    const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' });
 
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
