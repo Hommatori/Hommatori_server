@@ -43,24 +43,17 @@ app.post('/login',
     req.body.email = email;
     req.body.password = password;
 
-    console.log(req.body)
-
     next();
   },
-  passport.authenticate('local', { session: false }, function(req, res, user, e) {
-    if (e) {
-      return res.status(500).send();
-    }
-    if (user) {
+  passport.authenticate('local', { session: false }),
+  function(req, res) {
+    const user = req.user;
+    if (!user) {
       return res.status(401).send();
     }
 
-
     const encryptedUser = encryptData(user);
-    const accessToken = jwt.sign({ encryptedData: encryptedUser }, process.env.JWT_SECRET, { expiresIn: '1d' });
-
-    console.log(encryptedUser)
-    console.log(accessToken)
+    const accessToken = jwt.sign({ encryptedData: encryptedUser }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' });
 
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
@@ -71,7 +64,7 @@ app.post('/login',
     });
 
     return res.status(200).json({ message: 'Logged in' });
-  })
+  }
 );
 
 app.post("/logout", (req, res) => {
