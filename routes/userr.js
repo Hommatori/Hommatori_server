@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const userr = require('../models/userr_model');
-const AuthMiddleware = require('../authMiddleware.js');
+const AuthMiddleware = require('../config/authMiddleware.js');
 
 router.get('/:id', function(request, response) {
   if (request.params.id) {

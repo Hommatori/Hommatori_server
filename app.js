@@ -1,30 +1,22 @@
 const express = require('express');
-const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
 const passport = require('passport');
 require('./config/passport')(passport);
+const jwt = require('jsonwebtoken');
+const { encryptData } = require("./config/crypto");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
-const SECRET_KEY = process.env.SESSION_SECRET_KEY;
 
 const userrRouter = require('./routes/userr');
 const adRouter = require('./routes/ad');
 const signupRouter = require('./routes/signup.js');
 
-// Configure express-session middleware
-app.use(session({
-  secret: SECRET_KEY,
-  resave: false,
-  saveUninitialized: false,
-  cookie: { secure: false, maxAge: 1000 * 60 * 60 * 24 } // 1 day
-}));
-
+app.use(cookieParser());
 // Configure passport middleware
 app.use(passport.initialize());
-app.use(passport.session());
 
 const corsOptions = {
   origin: process.env.NEXTJS_ADDRESS,
@@ -36,7 +28,6 @@ app.use(cors(corsOptions));
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
 
 app.post('/login',
   (req, res, next) => {
@@ -54,21 +45,31 @@ app.post('/login',
 
     next();
   },
-  passport.authenticate('local'), (req, res) => {
-    // user authentication already done through passport here
-    // Set the user object in session data
-    req.session.user = req.user;
+  passport.authenticate('local', { session: false }),
+  function(req, res) {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).send();
+    }
 
-    // Set the session cookie
-    res.cookie('session', req.sessionID, {maxAge: req.session.cookie.maxAge, httpOnly: true});
-    res.cookie('user', JSON.stringify(req.user), {maxAge: req.session.cookie.maxAge, httpOnly: true});
+    const encryptedUser = encryptData(user);
+    const accessToken = jwt.sign({ encryptedData: encryptedUser }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' });
 
-    return res.status(200).json({ message: 'Cookies set!' });
-});
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      sameSite: 'strict',
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      path: '/',
+    });
 
-app.post('/logout', (req, res) => {
-  req.session.destroy();
-  res.send('Logged out');
+    return res.status(200).json({ message: 'Logged in' });
+  }
+);
+
+app.post("/logout", (req, res) => {
+  res.clearCookie('accessToken');
+  res.status(200).json({ message: 'Logged out' });
 });
 
 app.use('/userr', userrRouter);

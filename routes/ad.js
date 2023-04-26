@@ -4,7 +4,7 @@ const ad = require('../models/ad_model');
 const { v4: uuidv4 } = require("uuid");
 require("dotenv").config();
 const multer = require('multer');
-const AuthMiddleware = require('../authMiddleware.js');
+const AuthMiddleware = require('../config/authMiddleware.js');
 
 const { BlobServiceClient } = require("@azure/storage-blob");
 const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
@@ -81,7 +81,7 @@ router.get('/withparams/get',
 });
 
 
-router.post("/",  AuthMiddleware ,  (req, res) => {
+router.post("/", AuthMiddleware,  (req, res) => {
   const requiredFields = ['type', 'header', 'description', 'location', 'price', 'userid', 'region', 'municipality'];
   for (const field of requiredFields) {
     if (!(field in req.body) || typeof req.body[field] !== 'string') {
