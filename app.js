@@ -5,7 +5,7 @@ const cors = require('cors');
 const passport = require('passport');
 require('./config/passport')(passport);
 const jwt = require('jsonwebtoken');
-const { encryptData } = require("./config/crypto");
+const { encryptData, decryptData } = require("./config/crypto");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -30,7 +30,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.post('/login',
-  (req, res, next) => {
+  async (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
       return res.status(401).send('Unauthorized');
@@ -42,20 +42,31 @@ app.post('/login',
 
     req.body.email = email;
     req.body.password = password;
-
-    next();
+    next();    
   },
   passport.authenticate('local', { session: false }),
-  function(req, res) {
+  async function(req, res) {
     const user = req.user;
     if (!user) {
       return res.status(401).send();
     }
 
-    const isMobileApp = req.body.mobileAppToken && req.body.mobileAppToken === process.env.MOBILE_TOKEN;
-    const payload = isMobileApp ? { user } : { encryptedData: encryptData(user) };
+    const encryptedKey = req.body.encryptedKey;
+    console.log("yks1: " + encryptedKey)
+    const decryptedKey = encryptedKey ? decryptData(encryptedKey, process.env.MOBILE_SECRET_KEY) : null;
+    console.log("kakka: " + decryptedKey)
+    const expectedKey = process.env.MOBILE_TOKEN_ORIGINAL;
+    console.log("kasifjiop: " + expectedKey)
 
-    const accessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' });
+    const shouldSendUserDirectly = encryptedKey && decryptedKey === expectedKey;
+    console.log("kaks2: " + shouldSendUserDirectly)
+    
+    const userData = shouldSendUserDirectly ? user : encryptData(user);
+    const jwtExpiry = shouldSendUserDirectly ? '15d' : '1d';
+    console.log("kolme3: " + userData)
+    console.log("nelj4: " + jwtExpiry)
+
+    const accessToken = jwt.sign({ token: userData }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: jwtExpiry });
 
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
