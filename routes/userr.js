@@ -1,8 +1,10 @@
+// Import required modules
 const express = require('express');
 const router = express.Router();
 const userr = require('../models/userr_model');
 const AuthMiddleware = require('../config/authMiddleware.js');
 
+// Route for getting user by user's ID
 router.get('/:id', function(request, response) {
   if (request.params.id) {
     userr.getProfileData(request.params.id, function(err, dbResult) {
@@ -16,8 +18,10 @@ router.get('/:id', function(request, response) {
   }
 });
 
-router.get('/ad/:id', function(request, response) { // get ad publisher's data by ad's ID to show publisher data in nextjs single ad page
+// Route for getting ad publisher's data by ad's ID to show publisher data in single ad page
+router.get('/ad/:id', function(request, response) {
   if (request.params.id) {
+    // Retrieve some fields to show simple ad publisher data
     userr.getAdPublisher(request.params.id, function(err, dbResult) {
       if (err) {
         response.status(500).json('internal server error');
@@ -29,9 +33,10 @@ router.get('/ad/:id', function(request, response) { // get ad publisher's data b
   }
 });
 
+// Route for getting user's private data to show in user's account page
 router.get('/getprivatedata/:id', AuthMiddleware, function(request, response) {
   try {
-    // retrieve the user's profile information from the database
+    // Retrieve the user's profile information from the database
     userr.getProfileData(request.params.id, function(err, dbResult) {
       if (err) {
         response.status(500).json('internal server error');
@@ -46,12 +51,13 @@ router.get('/getprivatedata/:id', AuthMiddleware, function(request, response) {
   }
 });
 
+// Route for deleting a user by it's ID
 router.delete('/:id', AuthMiddleware, function(request, response) {
   userr.delete(request.params.id, function(err, count) {
 
   })
   try {
-    // retrieve the user's profile information from the database
+    // Delete user from database
     userr.delete(request.params.id, function(err, dbResult) {
       if (err) {
         response.status(500).json('internal server error');
@@ -65,6 +71,7 @@ router.delete('/:id', AuthMiddleware, function(request, response) {
   }
 });
 
+// Route to update user's data by user's ID
 router.put('/:id', AuthMiddleware, function(request, response) {
   userr.update(request.params.id, request.body, function(err, dbResult) {
     if (err) {
@@ -75,4 +82,5 @@ router.put('/:id', AuthMiddleware, function(request, response) {
   });
 });
 
+// Export the routes to be used in other modules
 module.exports = router;

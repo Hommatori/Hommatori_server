@@ -119,6 +119,7 @@ router.post("/", AuthMiddleware,  (req, res) => {
   }
 });
 
+// Route for uploading an image to an ad
 router.post("/imageupload", upload.single("image"), async (req, res) => {
   if(!req.body.adid || !req.file){
     console.log("Request data missing or invalid file type");
@@ -162,6 +163,7 @@ router.post("/imageupload", upload.single("image"), async (req, res) => {
 
 });
 
+// Route for deleting an ad by it's ID
 router.delete('/:id', AuthMiddleware, (req, response) => {
   ad.delete(req.params.id, function(err) {
     if (err) {
@@ -173,4 +175,5 @@ router.delete('/:id', AuthMiddleware, (req, response) => {
   })
 })
 
+// Export the routes to be used in other modules
 module.exports = router;
