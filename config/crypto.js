@@ -2,15 +2,18 @@
 
 const CryptoJS = require("crypto-js");
 
-const secretKey = process.env.CRYPTO_SECRET_KEY;
+const cryptoSecret = process.env.CRYPTO_SECRET_KEY
 
-function encryptData(data) {
-  return CryptoJS.AES.encrypt(JSON.stringify(data), secretKey).toString();
+function encryptData(userData) {
+  return CryptoJS.AES.encrypt(JSON.stringify(userData), cryptoSecret).toString();
 }
 
-function decryptData(encryptedData) {
-  const bytes = CryptoJS.AES.decrypt(encryptedData, secretKey);
-  return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+function decryptData(encryptedData, key) {
+  console.log("en: " + encryptedData)
+  const bytes = CryptoJS.AES.decrypt(encryptedData, key);
+  console.log("bytes: " + bytes)
+  console.log("final: " + bytes.toString(CryptoJS.enc.Utf8))
+  return bytes.toString(CryptoJS.enc.Utf8);
 }
 
 module.exports = { encryptData, decryptData };
