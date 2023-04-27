@@ -1,12 +1,14 @@
+// Import required modules
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const user = require('../models/userr_model');
 
+// Route for adding new user
 router.post('/', function (req, res) {
-    const requiredFields = ['fname', 'lname', 'phonenumber', 'username', 'password', 'email'];
+    const requiredFields = ['fname', 'lname', 'phonenumber', 'username', 'password', 'email']; // Define required request body fields
   
-    for (const field of requiredFields) {
+    for (const field of requiredFields) { // Loop through requiredFields and check if they exist in request body
       if (!(field in req.body) || typeof req.body[field] !== 'string') {
         res.status(400).json({ status: `Missing or invalid ${field} from request body` });
         return;
@@ -26,6 +28,7 @@ router.post('/', function (req, res) {
           const salt = bcrypt.genSaltSync(10);
           const passwordHash = bcrypt.hashSync(req.body.password, salt);
   
+          // Create a new user object
           const newUser = {
             fname: req.body.fname,
             lname: req.body.lname,
@@ -35,6 +38,7 @@ router.post('/', function (req, res) {
             password: passwordHash //password needs to be hashed
           }
   
+          // Add the new user to the database
           user.add(newUser, function (err) {
             if (err) {
               console.log(err);
@@ -54,6 +58,7 @@ router.post('/', function (req, res) {
     }
 })
 
+// Route for validating if an email already exists in the database
 router.get('/validateemail/:email', (req, res, next) => {
     if (!req.params.email) {
         res.status(400).send('Missing email parameter');
@@ -75,5 +80,6 @@ router.get('/validateemail/:email', (req, res, next) => {
         res.status(200).send('OK');
     });
 });
-    
+
+// Export the routes to be used in other modules
 module.exports=router;
