@@ -6,7 +6,6 @@ const cors = require('cors');
 const passport = require('passport');
 require('./config/passport')(passport);
 const jwt = require('jsonwebtoken');
-const { encryptData, decryptData } = require("./config/crypto");
 
 // Initialize express app
 const app = express();
@@ -60,15 +59,10 @@ app.post('/login',
       return res.status(401).send();
     }
 
-    const encryptedKey = req.body.encryptedKey; // Encrypted key received from expo react native app only to validate request sender as mobile app
-    const decryptedKey = encryptedKey ? decryptData(encryptedKey, process.env.MOBILE_SECRET_KEY) : null; // If above key exists -> decode it
-    const expectedKey = process.env.MOBILE_TOKEN_ORIGINAL; // Get the non-encoded original key value (encoded version stored in mobile app)
-    const shouldSendUserDirectly = encryptedKey && decryptedKey === expectedKey; // Compare decoded value to original which is known by server but not by expo app
-    
-    const userData = shouldSendUserDirectly ? user : encryptData(user); // Set user data as plain values or encoded depending on auth request sender (mobile app vs browser)
-    const jwtExpiry = shouldSendUserDirectly ? '15d' : '1d'; // Set token expiration longer for mobile app
+    const usingMobile = req.body.mobile; // Boolean from mobile app request    
+    const jwtExpiry = usingMobile ? '30d' : '1d'; // Set token expiration longer for mobile app
 
-    const accessToken = jwt.sign({ token: userData }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: jwtExpiry }); // Sign jwt access token and attach basic user data as payload
+    const accessToken = jwt.sign({ user: user }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: jwtExpiry }); // Sign jwt access token and attach basic user data as payload
 
     res.cookie('accessToken', accessToken, { // Sent JWT access token as a cookie
       httpOnly: true,
@@ -81,12 +75,6 @@ app.post('/login',
     return res.status(200).json({ message: 'Logged in' }); // Send success response
   }
 );
-
-// Logout route to clear the access token cookie
-app.post("/logout", (req, res) => {
-  res.clearCookie('accessToken');
-  res.status(200).json({ message: 'Logged out' });
-});
 
 // Use imported routes
 app.use('/userr', userrRouter);
