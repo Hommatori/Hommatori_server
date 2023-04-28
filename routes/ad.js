@@ -169,8 +169,8 @@ router.delete('/:id', AuthMiddleware, (req, response) => {
     if (err) {
       console.log(err)
       response.status(500).json('internal server error');
-    } else {
-        response.status(200).json('deleted successfully');
+    } else {      
+      response.status(200).json('deleted successfully');
     }
   })
 })
