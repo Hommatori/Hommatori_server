@@ -34,7 +34,7 @@ app.use(logger('dev')); // Terminal text coloring for development
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-
+// Login route, send JSON webtoken for future validation
 app.post('/login',
   async (req, res, next) => { // Custom middleware for parsing Basic authentication header 
     const authHeader = req.headers.authorization;
@@ -75,6 +75,12 @@ app.post('/login',
     return res.status(200).json({ message: 'Logged in' }); // Send success response
   }
 );
+
+// Log out user by removing access token cookie
+app.post('/logout', (req, res) => {
+  res.clearCookie('accessToken');
+  res.clearCookie('userData');
+});
 
 // Use imported routes
 app.use('/userr', userrRouter);
