@@ -80,6 +80,25 @@ router.get('/withparams/get',
   }
 });
 
+router.get('/withuserid/get', AuthMiddleware,
+ function(request, response) {
+  if (request.query) {
+    ad.getByUserId(request.query.userid, function(err, dbResult) {
+      if (err) {
+        console.log(err)
+        response.status(500).json('internal server error');
+      } else {
+        let data = dbResult;
+        if(data.rows.length == 0) {
+          response.status(404).json("not found");
+        } else {
+          response.status(200).json(data.rows);
+        }
+      }
+    });
+  }
+});
+
 
 router.post("/", AuthMiddleware,  (req, res) => {
   const requiredFields = ['type', 'header', 'description', 'location', 'price', 'userid', 'region', 'municipality'];
