@@ -81,7 +81,6 @@ app.post('/logout', (req, res) => {
   res.clearCookie('accessToken');
   res.clearCookie('userData');
   res.status(200).json({ message: 'logout successful' })
-
 });
 
 // Use imported routes
