@@ -26,81 +26,81 @@ const upload = multer({
 });
 
 router.get('/:id',
- function(request, response) {
-  if (request.params.id) {
-    ad.getAdbyid(request.params.id, function(err, dbResult) {
-      if (err) {
-        console.log(err)
-        response.status(500).json('internal server error');
-      } else {
-        let data = dbResult;
-        if(data.rows.length == 0) {
-          response.status(404).json("not found");
+  function (request, response) {
+    if (request.params.id) {
+      ad.getAdbyid(request.params.id, function (err, dbResult) {
+        if (err) {
+          console.log(err)
+          response.status(500).json('internal server error');
         } else {
-          response.status(200).json(data.rows[0]);
+          let data = dbResult;
+          if (data.rows.length == 0) {
+            response.status(404).json("not found");
+          } else {
+            response.status(200).json(data.rows[0]);
+          }
         }
-      }
-    });
-  }
-});
+      });
+    }
+  });
 
 router.get('/', function (request, response) {
 
-  ad.getAdAll(function(err, dbResult) {
+  ad.getAdAll(function (err, dbResult) {
     if (err) {
       console.log(err);
       response.status(500).json('internal server error');
     } else {
       let data = dbResult;
-      try{
+      try {
         response.status(200).json(data.rows)
-      } catch(err){
+      } catch (err) {
         response.status(404).json("nothing found")
       }
     }
-  });   
+  });
 });
 
 router.get('/withparams/get',
- function(request, response) {
-  if (request.query) {
-    ad.getByParams(request.query, function(err, dbResult) {
-      if (err) {
-        console.log(err);
-        response.status(500).json('internal server error');
-      } else {
-        let data = dbResult;
-        if(data.rows.length >  0){
-          response.status(200).json(data.rows[0]);
+  function (request, response) {
+    if (request.query) {
+      ad.getByParams(request.query, function (err, dbResult) {
+        if (err) {
+          console.log(err);
+          response.status(500).json('internal server error');
         } else {
-          response.status(404).json(data.rows);
+          let data = dbResult;
+          if (data.rows.length > 0) {
+            response.status(200).json(data.rows[0]);
+          } else {
+            response.status(404).json(data.rows);
+          }
         }
-      }
-    });
-  }
-});
+      });
+    }
+  });
 
 router.get('/withuserid/get', AuthMiddleware,
- function(request, response) {
-  if (request.query) {
-    ad.getByUserId(request.query.userid, function(err, dbResult) {
-      if (err) {
-        console.log(err)
-        response.status(500).json('internal server error');
-      } else {
-        let data = dbResult;
-        if(data.rows.length == 0) {
-          response.status(404).json("not found");
+  function (request, response) {
+    if (request.query) {
+      ad.getByUserId(request.query.userid, function (err, dbResult) {
+        if (err) {
+          console.log(err)
+          response.status(500).json('internal server error');
         } else {
-          response.status(200).json(data.rows);
+          let data = dbResult;
+          if (data.rows.length == 0) {
+            response.status(404).json("not found");
+          } else {
+            response.status(200).json(data.rows);
+          }
         }
-      }
-    });
-  }
-});
+      });
+    }
+  });
 
 
-router.post("/", AuthMiddleware,  (req, res) => {
+router.post("/", AuthMiddleware, (req, res) => {
   const requiredFields = ['type', 'header', 'description', 'location', 'price', 'userid', 'region', 'municipality'];
   for (const field of requiredFields) {
     if (!(field in req.body) || typeof req.body[field] !== 'string') {
@@ -124,23 +124,23 @@ router.post("/", AuthMiddleware,  (req, res) => {
   try {
     //  console.log(newAd)
     //  console.log(newAd.adid)
-      ad.add(newAd, function(err) {
-          if (err) {
-              console.log(err);
-              res.status(500).send('internal server error');
-          } else {
-              res.status(200).json('ad created');
-          }
-      });
-    }
-   catch (e){
+    ad.add(newAd, function (err) {
+      if (err) {
+        console.log(err);
+        res.status(500).send('internal server error');
+      } else {
+        res.status(200).json('ad created');
+      }
+    });
+  }
+  catch (e) {
     res.status(500).json('could not create ad');
   }
 });
 
 // Route for uploading an image to an ad
 router.post("/imageupload", upload.single("image"), async (req, res) => {
-  if(!req.body.adid || !req.file){
+  if (!req.body.adid || !req.file) {
     console.log("Request data missing or invalid file type");
     return res.status(400).send('Please fill all form data and check file type');
   } else {
@@ -148,23 +148,23 @@ router.post("/imageupload", upload.single("image"), async (req, res) => {
       const file = req.file; // The uploaded file object
       const originalName = file.originalname; // The original name of the file
       const fileBuffer = file.buffer; // The file data as a Buffer
-  
+
       // Generate a unique ID for the file name
       const uniqueId = uuidv4();
       const fileName = `${uniqueId}-${originalName}`;
-  
+
       // Upload the file to Azure Blob Storage
       const blockBlobClient = containerClient.getBlockBlobClient(fileName);
       await blockBlobClient.uploadData(fileBuffer, { blobHTTPHeaders: { blobContentType: file.mimetype } });
-  
+
       // Construct the uploaded file URL
       const fileUrl = `https://${containerName}.blob.core.windows.net/${fileName}`;
       let params = {
         adid: req.body.adid,
         image_url: fileUrl
       }
-  
-      ad.modifyImages(params, function(err, dbResult) {
+
+      ad.modifyImages(params, function (err, dbResult) {
         if (err) {
           console.log(err);
           res.status(500).send('internal server error');
@@ -173,26 +173,37 @@ router.post("/imageupload", upload.single("image"), async (req, res) => {
           res.status(200).send('successful');
         }
       })
-      
+
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Error uploading file" });
     }
-  }  
+  }
 
 });
 
 // Route for deleting an ad by it's ID
 router.delete('/:id', AuthMiddleware, (req, response) => {
-  ad.delete(req.params.id, function(err) {
+  ad.delete(req.params.id, function (err) {
     if (err) {
       console.log(err)
       response.status(500).json('internal server error');
-    } else {      
+    } else {
       response.status(200).json('deleted successfully');
     }
   })
 })
+
+// Route to update ad data by ad's ID
+router.put('/:id', AuthMiddleware, function (request, response) {
+  ad.update(request.params.id, request.body, function (err, dbResult) {
+    if (err) {
+      response.json(err);
+    } else {
+      response.json(dbResult);
+    }
+  });
+});
 
 // Export the routes to be used in other modules
 module.exports = router;

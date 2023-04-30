@@ -83,9 +83,9 @@ const ad = {
   },
 
   // Update an existing ad in the database
-  update: function (newAd, callback) {
-    return db.query('insert into ad(adid, type, header, description, location, price, userid, region, municipality) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
-      [newAd.adid, newAd.type, newAd.header, newAd.description, newAd.location, newAd.price, newAd.userid, newAd.region, newAd.municipality], callback);
+  update: function (adId, updatedAd, callback) {
+    return db.query('UPDATE ad SET type = $2, header = $3, description = $4, location = $5, price = $6, userid = $7, region = $8, municipality = $9 WHERE adid = $1',
+      [adId, updatedAd.type, updatedAd.header, updatedAd.description, updatedAd.location, updatedAd.price, updatedAd.userid, updatedAd.region, updatedAd.municipality], callback);
   },
 
   // Delete an ad from the database

@@ -53,7 +53,7 @@ app.post('/login',
     next(); // Continue sending auth header values to passport middleware
   },
   passport.authenticate('local', { session: false }), // Authenticate using passport middleware
-  async function(req, res) {
+  async function (req, res) {
     const user = req.user;
     if (!user) {
       return res.status(401).send();
@@ -80,7 +80,7 @@ app.post('/login',
 app.post('/logout', (req, res) => {
   res.clearCookie('accessToken');
   res.clearCookie('userData');
-  res.status(200).json({message: 'logout successful'})
+  res.status(200).json({ message: 'logout successful' })
 
 });
 
