@@ -29,8 +29,18 @@ const userr = {
     
     // Delete a user from the database by their ID adn delete ad's published by the user
     delete: function(id, callback) {
-        return db.query('begin; delete from ad where userid = $1; delete from userr where userid = $1; commit;', [id], callback);
-    },
+        db.query('DELETE FROM ad WHERE userid = $1', [id], (err, res) => {
+          if (err) {
+            return callback(err, null);
+          }
+          db.query('DELETE FROM userr WHERE userid = $1', [id], (err, res) => {
+            if (err) {
+              return callback(err, null);
+            }
+            return callback(null, res);
+          });
+        });
+      },
     
     // Update a user's information in the database
     update: function(id, user, callback) {

@@ -52,24 +52,19 @@ router.get('/getprivatedata/:id', AuthMiddleware, function(request, response) {
 });
 
 // Route for deleting a user by it's ID
-router.delete('/:id', AuthMiddleware, function(request, response) {
-  userr.delete(request.params.id, function(err, count) {
-
-  })
-  try {
+router.delete('/:id', AuthMiddleware, function(request, response) { 
     // Delete user from database
-    userr.delete(request.params.id, function(err, dbResult) {
+    userr.delete(request.params.id, function(err) {
       if (err) {
+        console.log(err)
         response.status(500).json('internal server error');
       } else {
         response.status(200).json('successfully deleted account');
       }
     });
-  } catch (err) {
-    console.error(err);
-    response.status(500).json({ message: 'Server error' });
   }
-});
+);
+
 
 // Route to update user's data by user's ID
 router.put('/:id', AuthMiddleware, function(request, response) {
