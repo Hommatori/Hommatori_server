@@ -10,7 +10,7 @@ router.post('/', function (req, res) {
 
   for (const field of requiredFields) { // Loop through requiredFields and check if they exist in request body
     if (!(field in req.body) || typeof req.body[field] !== 'string') {
-      res.status(400).json({ status: `Missing or invalid ${field} from request body` });
+      res.status(400).json({ message: `Missing or invalid ${field} from request body` });
       return;
     }
   }
@@ -21,7 +21,7 @@ router.post('/', function (req, res) {
     user.findExistingEmail(checkEmail, function (err, dbResult) {
       if (dbResult.rows.length) { //existing email found
         console.log("email exists")
-        res.status(400).json({ status: "Email already exists!" });
+        res.status(400).json({ message: "Email already exists!" });
         return;
       } else {
         //create hash of the password
@@ -41,19 +41,17 @@ router.post('/', function (req, res) {
         // Add the new user to the database
         user.add(newUser, function (err) {
           if (err) {
-            console.log(err);
-            console.log("database error")
-            res.status(500);
+            res.status(500).json({message: 'internal server error' });
             return;
           } else {
-            res.status(201).json({ status: "user created" });
+            res.status(201).json({ message: "user created" });
             console.log("user created with email: " + newUser.email);
           }
         });
       }
     });
   } catch (err) {
-    console.log("an error occurred")
+    res.status(500).json({message: 'internal server error'})
     return;
   }
 })
@@ -61,23 +59,23 @@ router.post('/', function (req, res) {
 // Route for validating if an email already exists in the database
 router.get('/validateemail/:email', (req, res, next) => {
   if (!req.params.email) {
-    res.status(400).send('Missing email parameter');
+    res.status(400).json({message: 'Missing email parameter'});
     return;
   }
   const checkEmail = req.params.email.toLowerCase();
   user.findExistingEmail(checkEmail, (err, dbResult) => {
     if (err) {
-      console.log('Database error:', err);
+      res.status(500).json({message: 'inteernal server error'})
       next(err);
       return;
     }
     if (dbResult.rows.length) {
       console.log('Email already exists:', dbResult.rows);
-      res.status(400).send('email_exists');
+      res.status(400).json({message: 'email exists'});
       return;
     }
     console.log('Email is available');
-    res.status(200).send('OK');
+    res.status(200).json({message: 'OK'});
   });
 });
 

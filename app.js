@@ -21,12 +21,13 @@ app.use(cookieParser());
 app.use(passport.initialize());
 
 
-// Configure CORS options and middleware
+// Configure CORS options
 const corsOptions = {
   origin: process.env.NEXTJS_ADDRESS,
   credentials: true, // Allow cookies to be sent with requests
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Origin, X-Requested-With, Content-Type, Accept, Authorization, Credentials'],
 };
+// Use the cors package with the provided corsOptions
 app.use(cors(corsOptions));
 
 // Express middlewares
@@ -56,7 +57,7 @@ app.post('/login',
   async function (req, res) {
     const user = req.user;
     if (!user) {
-      return res.status(401).send();
+      return res.status(401).json({message: 'authentication failed'});
     }
 
     const usingMobile = req.body.mobile; // Boolean from mobile app request    

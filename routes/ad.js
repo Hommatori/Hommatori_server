@@ -5,24 +5,24 @@ const { v4: uuidv4 } = require("uuid");
 require("dotenv").config();
 const multer = require('multer');
 const AuthMiddleware = require('../config/authMiddleware.js');
-
 const { BlobServiceClient } = require("@azure/storage-blob");
+
 const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING;
 const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
 const containerName = process.env.AZURE_CONTAINER_NAME;
 const containerClient = blobServiceClient.getContainerClient(containerName);
+
 const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter: (req, file, callback) => {
-    const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
-    const fileBuffer = file.buffer;
-    const { mime } = fileType(fileBuffer);
-    if (allowedTypes.includes(mime)) {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (allowedTypes.includes(file.mimetype)) {
       callback(null, true);
     } else {
-      callback(new Error("Invalid file type. Only JPEG, PNG, and JPG files are allowed."));
+      callback(new Error('Invalid file type. Only JPEG, PNG, and JPG files are allowed.'));
     }
-  }
+  },
+  limits: { fileSize: 1024 * 1024 * 5 } // 5 MB file size limit
 });
 
 router.get('/:id',
@@ -31,11 +31,11 @@ router.get('/:id',
       ad.getAdbyid(request.params.id, function (err, dbResult) {
         if (err) {
           console.log(err)
-          response.status(500).json('internal server error');
+          response.status(500).json({message: 'internal server error'});
         } else {
           let data = dbResult;
           if (data.rows.length == 0) {
-            response.status(404).json("not found");
+            response.status(404).json({message: "not found"});
           } else {
             response.status(200).json(data.rows[0]);
           }
@@ -49,13 +49,13 @@ router.get('/', function (request, response) {
   ad.getAdAll(function (err, dbResult) {
     if (err) {
       console.log(err);
-      response.status(500).json('internal server error');
+      response.status(500).json({message: 'internal server error'});
     } else {
       let data = dbResult;
       try {
         response.status(200).json(data.rows)
       } catch (err) {
-        response.status(404).json("nothing found")
+        response.status(404).json({message: "nothing found"})
       }
     }
   });
@@ -67,7 +67,7 @@ router.get('/withparams/get',
       ad.getByParams(request.query, function (err, dbResult) {
         if (err) {
           console.log(err);
-          response.status(500).json('internal server error');
+          response.status(500).json({message: 'internal server error'});
         } else {
           let data = dbResult;
           if (data.rows.length > 0) {
@@ -86,11 +86,11 @@ router.get('/withuserid/get', AuthMiddleware,
       ad.getByUserId(request.query.userid, function (err, dbResult) {
         if (err) {
           console.log(err)
-          response.status(500).json('internal server error');
+          response.status(500).json({message: 'internal server error'});
         } else {
           let data = dbResult;
           if (data.rows.length == 0) {
-            response.status(404).json("not found");
+            response.status(404).json({message: "not found"});
           } else {
             response.status(200).json(data.rows);
           }
@@ -100,11 +100,18 @@ router.get('/withuserid/get', AuthMiddleware,
   });
 
 
-router.post("/", AuthMiddleware, (req, res) => {
+// Route for ad creation
+const fields = [
+  { name: 'image1', maxCount: 1 },
+  { name: 'image2', maxCount: 1 },
+  { name: 'image3', maxCount: 1 },
+];
+
+router.post("/", AuthMiddleware, upload.fields(fields), async (req, res) => {
   const requiredFields = ['type', 'header', 'description', 'location', 'price', 'userid', 'region', 'municipality'];
   for (const field of requiredFields) {
     if (!(field in req.body) || typeof req.body[field] !== 'string') {
-      res.status(400).json(`Missing or invalid ${field} from request body`);
+      res.status(400).json({message: `Missing or invalid ${field} from request`});
       return;
     }
   }
@@ -118,68 +125,65 @@ router.post("/", AuthMiddleware, (req, res) => {
     price: req.body.price,
     userid: req.body.userid,
     region: req.body.region,
-    municipality: req.body.municipality
-  }
+    municipality: req.body.municipality,
+    images: "" // Add the images property
+  };
 
   try {
-    //  console.log(newAd)
-    //  console.log(newAd.adid)
+    const imageUrls = []; // Create an array to store the image URLs
+
+    // Handle image uploads if any
+    if (req.files && Object.keys(req.files).length > 0) {
+      try {
+        const imageUploadPromises = Object.values(req.files).flat().map(async (file) => {
+          const fileBuffer = file.buffer;
+
+          // Generate a unique ID for the file name
+          const uniqueId = uuidv4();
+          const fileName = `ad-hommatori-${uniqueId}`;
+
+          // Upload the file to Azure Blob Storage
+          const blockBlobClient = containerClient.getBlockBlobClient(fileName);
+          await blockBlobClient.uploadData(fileBuffer, { blobHTTPHeaders: { blobContentType: file.mimetype } });
+
+          // Construct the uploaded file URL
+          const fileUrl = `https://${process.env.AZURE_STORAGEACCOUNT_NAME}.blob.core.windows.net/${process.env.AZURE_CONTAINER_NAME}/${fileName}`;
+          imageUrls.push(fileUrl); // Add the fileUrl to the imageUrls array
+
+          // Return the fileUrl and additional information about the uploaded file
+          return {
+            url: fileUrl,
+            originalName: file.originalname,
+            mimetype: file.mimetype,
+            size: file.size
+          };
+        });
+
+        const uploadedImages = await Promise.all(imageUploadPromises);
+        console.log({ message: "All images uploaded successfully", images: uploadedImages });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error uploading files" });
+        return;
+      }
+    }
+
+    // Set the images property of the newAd object to the stringified imageUrls array
+    newAd.images = JSON.stringify(imageUrls);
+
+    // Update the ad.add() function to include the images property
     ad.add(newAd, function (err) {
       if (err) {
         console.log(err);
-        res.status(500).send('internal server error');
+        res.status(500).send({message: 'internal server error'});
       } else {
-        res.status(200).json('ad created');
+        res.status(200).json({message: 'successfully created a new ad', adid: newAd.adid});
       }
     });
   }
   catch (e) {
-    res.status(500).json('could not create ad');
+    res.status(500).json({message: 'Experienced an internal server error while creating ad'});
   }
-});
-
-// Route for uploading an image to an ad
-router.post("/imageupload", upload.single("image"), async (req, res) => {
-  if (!req.body.adid || !req.file) {
-    console.log("Request data missing or invalid file type");
-    return res.status(400).send('Please fill all form data and check file type');
-  } else {
-    try {
-      const file = req.file; // The uploaded file object
-      const originalName = file.originalname; // The original name of the file
-      const fileBuffer = file.buffer; // The file data as a Buffer
-
-      // Generate a unique ID for the file name
-      const uniqueId = uuidv4();
-      const fileName = `${uniqueId}-${originalName}`;
-
-      // Upload the file to Azure Blob Storage
-      const blockBlobClient = containerClient.getBlockBlobClient(fileName);
-      await blockBlobClient.uploadData(fileBuffer, { blobHTTPHeaders: { blobContentType: file.mimetype } });
-
-      // Construct the uploaded file URL
-      const fileUrl = `https://${containerName}.blob.core.windows.net/${fileName}`;
-      let params = {
-        adid: req.body.adid,
-        image_url: fileUrl
-      }
-
-      ad.modifyImages(params, function (err, dbResult) {
-        if (err) {
-          console.log(err);
-          res.status(500).send('internal server error');
-        } else {
-          console.log("image path updated succesfully");
-          res.status(200).send('successful');
-        }
-      })
-
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: "Error uploading file" });
-    }
-  }
-
 });
 
 // Route for deleting an ad by it's ID
@@ -187,9 +191,9 @@ router.delete('/:id', AuthMiddleware, (req, response) => {
   ad.delete(req.params.id, function (err) {
     if (err) {
       console.log(err)
-      response.status(500).json('internal server error');
+      response.status(500).json({message: 'internal server error'});
     } else {
-      response.status(200).json('deleted successfully');
+      response.status(200).json({message: 'deleted successfully'});
     }
   })
 })
@@ -198,7 +202,7 @@ router.delete('/:id', AuthMiddleware, (req, response) => {
 router.put('/:id', AuthMiddleware, function (request, response) {
   ad.update(request.params.id, request.body, function (err, dbResult) {
     if (err) {
-      response.json(err);
+      response.json({message: 'Failed to update ad'});
     } else {
       response.json(dbResult);
     }

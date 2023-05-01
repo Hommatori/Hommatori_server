@@ -44,13 +44,13 @@ const ad = {
 
     // Check final query params
     if (params.order == '1') {  // Sort by oldest date first
-      queryString += ` order by date desc limit 10`;
+      queryString += ` order by date asc limit 10`;
     } else if (params.order == '2') { // Sort by lowest first    
       queryString += ` order by price asc limit 10`;
     } else if (params.order == '3') { // Sort by higest price first  
       queryString += ` order by price desc limit 10`;
     } else { // Sort by newest date first (default)
-      queryString += ` order by date asc limit 10`;
+      queryString += ` order by date desc limit 10`;
     }
 
     if (params.page && params.page.trim() !== 'null') { // Since we return only a specified amount of results, you can request overflow pages by number
@@ -78,8 +78,8 @@ const ad = {
 
   // Add a new ad to the database
   add: function (newAd, callback) {
-    return db.query('insert into ad (adid, type, header, description, location, price, userid, region, municipality) values ($1, $2, $3, $4, $5, $6, $7, $8, $9)',
-      [newAd.adid, newAd.type, newAd.header, newAd.description, newAd.location, newAd.price, newAd.userid, newAd.region, newAd.municipality], callback);
+    return db.query('insert into ad (adid, type, header, description, location, price, userid, region, municipality, image) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
+      [newAd.adid, newAd.type, newAd.header, newAd.description, newAd.location, newAd.price, newAd.userid, newAd.region, newAd.municipality, newAd.images], callback);
   },
 
   // Update an existing ad in the database
