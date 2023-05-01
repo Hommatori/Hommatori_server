@@ -3,10 +3,10 @@ const jwt = require('jsonwebtoken');
 
 // Define the authMiddleware function that will serve as a middleware for protected routes
 const authMiddleware = (req, res, next) => {
-  
+
   // Get the access token from the cookies of the incoming request
   let accessTokenFromCookie = req.cookies.accessToken;
-  
+
   // Get the access token from the Authorization header of the incoming request
   let authHeader = req.headers.authorization;
   const accessTokenFromHeader = authHeader && authHeader.split(' ')[1];
