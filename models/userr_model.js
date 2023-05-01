@@ -46,8 +46,8 @@ const userr = {
     update: function (id, user, callback) {
         // Hash the user's new password with bcrypt before updating it in the database
         bcrypt.hash(user.password, saltRounds, function (err, hash) {
-            return db.query('update userr set email=$1, password=$2, fname=$3, lname=$4, phonenumber=$5 where userid=$6;',
-                [user.email, hash, user.fname, user.lname, user.phonenumber, id], callback);
+            return db.query('update userr set email=$1, password=$2, fname=$3, lname=$4, phonenumber=$5, username=$6 where userid=$7;',
+                [user.email, hash, user.fname, user.lname, user.phonenumber, user.username, id], callback);
         });
     },
 
