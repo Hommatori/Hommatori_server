@@ -53,7 +53,7 @@ const userr = {
 
     // Get the contact information for the user who posted a specific ad
     getAdPublisher: function (id, callback) {
-        return db.query('select email, username, phonenumber, creation_time from userr where userid= $1', [id], callback);
+        return db.query('select fname, lname, email, username, phonenumber, creation_time from userr where userid= $1', [id], callback);
     },
 }
 
