@@ -22,11 +22,23 @@ app.use(passport.initialize());
 
 
 // Configure CORS options
+const allowedOrigins = [
+  process.env.NEXTJS_ADDRESS,
+  // Add more origins if needed
+];
+
 const corsOptions = {
-  origin: process.env.NEXTJS_ADDRESS,
+  origin: (origin, callback) => {
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true, // Allow cookies to be sent with requests
   allowedHeaders: ['Origin, X-Requested-With, Content-Type, Accept, Authorization, Credentials'],
 };
+
 // Use the cors package with the provided corsOptions
 app.use(cors(corsOptions));
 
