@@ -10,8 +10,8 @@ const userr = {
 
     // Add a new user to the database
     add: function (newUser, callback) {
-        return db.query('insert into userr (email, fname, lname, phonenumber, username, password) values ($1, $2, $3, $4, $5, $6)',
-            [newUser.email, newUser.fname, newUser.lname, newUser.phonenumber, newUser.username, newUser.password], callback);
+        return db.query('insert into userr (userid, email, fname, lname, phonenumber, username, password) values ($1, $2, $3, $4, $5, $6, $7)',
+            [newUser.userid, newUser.email, newUser.fname, newUser.lname, newUser.phonenumber, newUser.username, newUser.password], callback);
     },
 
     // Get the profile data for a user by their ID
@@ -25,6 +25,13 @@ const userr = {
         console.log("checkEmail: " + checkEmail)
         return db.query('select email from userr where email = $1',
             [checkEmail], callback);
+    },
+
+    // Check if a username already exists in the database
+    findExistingUsername: function (checkUsername, callback) {
+        console.log("checkUsername: " + checkUsername)
+        return db.query('select username from userr where username = $1',
+            [checkUsername], callback);
     },
 
     // Delete a user from the database by their ID adn delete ad's published by the user
