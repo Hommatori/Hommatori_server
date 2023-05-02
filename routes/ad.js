@@ -97,7 +97,7 @@ router.get('/withuserid/get', AuthMiddleware,
         }
       });
     }
-  });
+});
 
 
 // Route for ad creation

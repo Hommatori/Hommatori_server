@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const user = require('../models/userr_model');
+const { v4: uuidv4 } = require("uuid");
 
 // Route for adding new user
 router.post('/', function (req, res) {
@@ -21,7 +22,7 @@ router.post('/', function (req, res) {
     user.findExistingEmail(checkEmail, function (err, dbResult) {
       if (dbResult.rows.length) { //existing email found
         console.log("email exists")
-        res.status(400).json({ message: "Email already exists!" });
+        res.status(400).json({ message: "Email taken!" });
         return;
       } else {
         //create hash of the password
@@ -30,6 +31,7 @@ router.post('/', function (req, res) {
 
         // Create a new user object
         const newUser = {
+          userid: uuidv4(),
           fname: req.body.fname,
           lname: req.body.lname,
           email: req.body.email.toLowerCase(),
@@ -75,6 +77,29 @@ router.get('/validateemail/:email', (req, res, next) => {
       return;
     }
     console.log('Email is available');
+    res.status(200).json({message: 'OK'});
+  });
+});
+
+// Route for validating if a username already exists in the database
+router.get('/validateusername/:username', (req, res, next) => {
+  if (!req.params.username) {
+    res.status(400).json({message: 'Missing email parameter'});
+    return;
+  }
+  const checkUsername = req.params.username;
+  user.findExistingUsername(checkUsername, (err, dbResult) => {
+    if (err) {
+      res.status(500).json({message: 'inteernal server error'})
+      next(err);
+      return;
+    }
+    if (dbResult.rows.length) {
+      console.log('Username already exists:', dbResult.rows);
+      res.status(400).json({message: 'email exists'});
+      return;
+    }
+    console.log('Username is available');
     res.status(200).json({message: 'OK'});
   });
 });
